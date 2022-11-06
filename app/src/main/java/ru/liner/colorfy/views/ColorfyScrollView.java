@@ -21,6 +21,8 @@ import java.util.Objects;
 import ru.liner.colorfy.R;
 import ru.liner.colorfy.core.WallpaperData;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
+import ru.liner.colorfy.utils.Reflect;
+import ru.liner.colorfy.utils.Utils;
 
 /**
  * @author : "Line'R"
@@ -44,8 +46,10 @@ public class ColorfyScrollView extends ScrollView implements IWallpaperDataListe
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
+
     @Override
     public void onChanged(@NonNull WallpaperData wallpaperData) {
+        colorizeEdgeEffect(this, wallpaperData);
         Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.scrollbar);
         Objects.requireNonNull(drawable).setColorFilter(new PorterDuffColorFilter(wallpaperData.primaryColor, PorterDuff.Mode.SRC_IN));
         if (isVerticalScrollBarEnabled()) {
@@ -93,6 +97,26 @@ public class ColorfyScrollView extends ScrollView implements IWallpaperDataListe
             Method setVerticalThumbDrawable = Objects.requireNonNull(scrollbar).getClass().getDeclaredMethod("setHorizontalThumbDrawable", Drawable.class);
             setVerticalThumbDrawable.invoke(scrollbar, drawable);
         } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void colorizeEdgeEffect(View view, WallpaperData wallpaperData){
+        try {
+            Field edgeGlowTopField = Reflect.findField(view.getClass(), "mEdgeGlowTop");
+            Field edgeGlowBottomField = Reflect.findField(view.getClass(), "mEdgeGlowBottom");
+            if(edgeGlowTopField == null || edgeGlowBottomField == null)
+                return;
+            Object edgeGlowTop = edgeGlowTopField.get(view);
+            Object edgeGlowBottom = edgeGlowBottomField.get(view);
+            if(edgeGlowTop == null || edgeGlowBottom == null)
+                return;
+            Method setColorMethod = Reflect.findMethod(edgeGlowTop.getClass(), "setColor", int.class);
+            if(setColorMethod != null){
+                setColorMethod.invoke(edgeGlowTop, wallpaperData.primaryColor);
+                setColorMethod.invoke(edgeGlowBottom, wallpaperData.primaryColor);
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }

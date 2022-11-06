@@ -14,6 +14,35 @@ import java.lang.reflect.Method;
 public class Reflect {
 
     @Nullable
+    public static Field findField(Class<?> clazz, String fieldName){
+        try {
+            Field field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field;
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            Class<?> superClass = clazz.getSuperclass();
+            if(superClass != null)
+                return findField(superClass, fieldName);
+            return null;
+        }
+    }
+    @Nullable
+    public static Method findMethod(Class<?> clazz, String methodName, Class<?> ... params){
+        try {
+            Method method = clazz.getDeclaredMethod(methodName, params);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            Class<?> superClass = clazz.getSuperclass();
+            if(superClass != null)
+                return findMethod(superClass, methodName, params);
+            return null;
+        }
+    }
+
+    @Nullable
     public static Object getFieldValue(Object obj, String fieldName) {
         Object result = null;
         try {

@@ -193,7 +193,8 @@ public class Colorfy {
      *
      * @return Thumbnail if current wallpaper is live, bitmap other cases
      */
-    private Bitmap getWallpaper() {
+    @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
+    public Bitmap getWallpaper() {
         return Utils.drawableToBitmap(isWallpaperLive() ? wallpaperManager.getWallpaperInfo().loadThumbnail(packageManager) : wallpaperManager.getDrawable());
     }
 }

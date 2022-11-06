@@ -15,6 +15,7 @@ import android.view.Window;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +31,7 @@ import ru.liner.colorfy.listener.IWallpaperListener;
  * @created : 04.11.2022, пятница
  **/
 public class ColorfyActivity extends AppCompatActivity implements IWallpaperDataListener, IWallpaperListener {
+    @Nullable
     protected Colorfy colorfy;
     private Window window;
     private ActionBar actionBar;
@@ -55,7 +57,7 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         rootView = (ViewGroup) ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
         actionBar = getSupportActionBar();
         acceptColorChanged = rootView != null;
-        if (acceptColorChanged)
+        if (acceptColorChanged && colorfy != null)
             colorfy.requestColors();
     }
 
@@ -63,12 +65,12 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     @Override
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);
-        if(colorfy == null)
+        if (colorfy == null)
             return;
-        WallpaperData wallpaperData =  colorfy.getLastWallpaperData();
-        if(wallpaperData != null && Config.changeFragmentBackground){
+        WallpaperData wallpaperData = colorfy.getLastWallpaperData();
+        if (wallpaperData != null && Config.changeFragmentBackground) {
             ViewGroup fragmentView = (ViewGroup) fragment.getView();
-            if(fragmentView != null && fragmentView.getChildCount() >= 1){
+            if (fragmentView != null && fragmentView.getChildCount() >= 1) {
                 View fragmentRootView = fragmentView.getChildAt(0);
                 fragmentRootView.setBackgroundColor(wallpaperData.backgroundColor);
             }
@@ -125,11 +127,16 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         if (requestCode == 4879) {
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && colorfy != null)
                         colorfy.requestColors(true);
                 }
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @CallSuper
+    public void setAcceptColorChanged(boolean acceptColorChanged) {
+        this.acceptColorChanged = acceptColorChanged;
     }
 }

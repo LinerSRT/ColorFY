@@ -40,10 +40,10 @@ public class Config {
      * Determinate how much apply primary color to background color
      */
     @FloatRange(from = 0.1f, to = 0.4f)
-    public static float backgroundToneAmount = 0.15f;
+    public static float backgroundToneAmount = 0.1f;
     /**
      * Determinate how much apply primary color to text color
      */
     @FloatRange(from = 0.1f, to = 0.4f)
-    public static float textToneAmount = 0.15f;
+    public static float textToneAmount = 0.1f;
 }

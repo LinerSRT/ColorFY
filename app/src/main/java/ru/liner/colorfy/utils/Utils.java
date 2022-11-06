@@ -7,11 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
-
-import ru.liner.colorfy.Config;
 
 /**
  * @author : "Line'R"
@@ -35,9 +32,6 @@ public class Utils {
     }
 
     public static boolean isNightTheme(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            return (context.getResources().getConfiguration().uiMode
-                    & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        return Config.nightTheme;
+        return (context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 }

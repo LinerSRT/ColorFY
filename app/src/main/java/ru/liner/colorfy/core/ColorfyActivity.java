@@ -2,6 +2,7 @@ package ru.liner.colorfy.core;
 
 
 import android.Manifest;
+import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
@@ -60,23 +61,39 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
 
     @CallSuper
     @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        if(colorfy == null)
+            return;
+        WallpaperData wallpaperData =  colorfy.getLastWallpaperData();
+        if(wallpaperData != null && Config.changeFragmentBackground){
+            ViewGroup fragmentView = (ViewGroup) fragment.getView();
+            if(fragmentView != null && fragmentView.getChildCount() >= 1){
+                View fragmentRootView = fragmentView.getChildAt(0);
+                fragmentRootView.setBackgroundColor(wallpaperData.backgroundColor);
+            }
+        }
+    }
+
+    @CallSuper
+    @Override
     public void onChanged(@NonNull WallpaperData wallpaperData) {
         runOnUiThread(() -> {
+            if (ActivityCompat.checkSelfPermission(ColorfyActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                return;
             if (acceptColorChanged) {
                 if (Config.changeActivityBackground)
                     rootView.setBackgroundColor(wallpaperData.backgroundColor);
-                if (Config.changeSystemBars) {
+                if (Config.changeNavigationBar)
                     window.setNavigationBarColor(wallpaperData.backgroundColor);
+                if (Config.changeStatusBar)
                     window.setStatusBarColor(wallpaperData.secondaryColor);
-                }
-                if (actionBar != null) {
+                if (actionBar != null && Config.changeApplicationBar) {
                     actionBar.setBackgroundDrawable(new ColorDrawable(wallpaperData.primaryColor));
                     Spannable text = new SpannableString(actionBar.getTitle());
                     text.setSpan(new ForegroundColorSpan(wallpaperData.textOnPrimaryColor), 0, text.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
                     actionBar.setTitle(text);
                 }
-                if (ActivityCompat.checkSelfPermission(ColorfyActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                    return;
                 applyWallpaperData(rootView, wallpaperData);
             }
         });
@@ -108,8 +125,7 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         if (requestCode == 4879) {
             if (grantResults.length > 0) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED && permissions[0].equals(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    if (ActivityCompat.checkSelfPermission(this,
-                            Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                         colorfy.requestColors(true);
                 }
             }

@@ -7,6 +7,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.palette.graphics.Palette;
 
+import ru.liner.colorfy.Config;
 import ru.liner.colorfy.utils.ColorUtils;
 import ru.liner.colorfy.utils.Utils;
 
@@ -32,7 +33,13 @@ public class WallpaperData {
 
     private WallpaperData(@NonNull Context context, @NonNull Bitmap bitmap) {
         this.bitmap = bitmap;
-        this.isDarkTheme = Utils.isNightTheme(context);
+        if(Config.forceDayTheme){
+            this.isDarkTheme = false;
+        } else if(Config.forceNightTheme){
+            this.isDarkTheme = true;
+        } else {
+            this.isDarkTheme = Utils.isNightTheme(context);
+        }
     }
 
     private WallpaperData(@NonNull Bitmap bitmap) {
@@ -59,8 +66,8 @@ public class WallpaperData {
             wallpaperData.primaryColor = swatch.getRgb();
             wallpaperData.secondaryColor = ColorUtils.darkerColor(wallpaperData.primaryColor, 0.2f);
             wallpaperData.textOnPrimaryColor = swatch.getBodyTextColor();
-            wallpaperData.backgroundColor =	wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 0.92f) : ColorUtils.lightenColor(wallpaperData.primaryColor, 0.2f);
-            wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, 0.2f) : ColorUtils.darkerColor(wallpaperData.primaryColor, 0.92f);
+            wallpaperData.backgroundColor =	wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
+            wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f-Config.textToneAmount);
             generate.onGenerated(wallpaperData);
         }).start();
     }

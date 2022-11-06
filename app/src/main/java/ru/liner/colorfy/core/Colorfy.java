@@ -45,7 +45,7 @@ public class Colorfy {
     @Nullable
     private WallpaperData currentWallpaperData;
     @Nullable
-    private WallpaperData tempWallpaperData;
+    private WallpaperData lastWallpaperData;
 
     /**
      * Get instance of Color-fy
@@ -74,10 +74,8 @@ public class Colorfy {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_WALLPAPER_CHANGED)) {
-                    boolean isLiveWallpaper = isWallpaperLive();
-                    Bitmap bitmap = Utils.drawableToBitmap(isLiveWallpaper ? wallpaperManager.getWallpaperInfo().loadThumbnail(packageManager) : wallpaperManager.getDrawable());
                     for (IWallpaperListener iwallpaper : wallpaperChangedListeners)
-                        iwallpaper.onWallpaperChanged(bitmap, isLiveWallpaper);
+                        iwallpaper.onWallpaperChanged(getWallpaper(), isWallpaperLive());
                     requestColors(true);
                 }
             }
@@ -95,28 +93,33 @@ public class Colorfy {
      */
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors(boolean force) {
-        Bitmap bitmap = getWallpaper();
-        for (IWallpaperListener iwallpaper : wallpaperChangedListeners)
-            iwallpaper.onWallpaperChanged(bitmap, isWallpaperLive());
-        WallpaperData.from(context, bitmap, wallpaperData -> {
-            if (currentWallpaperData == null || force) {
-                currentWallpaperData = wallpaperData;
-                for (IWallpaperDataListener wallpaperDataListener : wallpaperDataListeners)
-                    wallpaperDataListener.onChanged(wallpaperData);
-            } else if (!currentWallpaperData.isSame(wallpaperData))
-                for (IWallpaperDataListener wallpaperDataListener : wallpaperDataListeners)
-                    wallpaperDataListener.onChanged(wallpaperData);
-            tempWallpaperData = wallpaperData;
+        WallpaperData.from(context, getWallpaper(), wallpaperData -> {
+            if(wallpaperData != null){
+                if((currentWallpaperData == null || force)){
+                    currentWallpaperData = wallpaperData;
+                    if(lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                        lastWallpaperData = currentWallpaperData;
+                    for(IWallpaperDataListener dataListener : wallpaperDataListeners)
+                        dataListener.onChanged(currentWallpaperData);
+                } else if(!currentWallpaperData.isSame(wallpaperData)){
+                    currentWallpaperData = wallpaperData;
+                    if(lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                        lastWallpaperData = currentWallpaperData;
+                    for(IWallpaperDataListener dataListener : wallpaperDataListeners)
+                        dataListener.onChanged(currentWallpaperData);
+                }
+            }
         });
     }
 
+
     /**
-     * Return temporary wallpaper data;
-     * @return data
+     * Get last known wallpaper data
+     * @return wallpaper data
      */
     @Nullable
-    public WallpaperData getTempWallpaperData() {
-        return tempWallpaperData;
+    public WallpaperData getLastWallpaperData() {
+        return lastWallpaperData;
     }
 
     /**

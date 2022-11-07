@@ -4,6 +4,7 @@ package ru.liner.colorfy.core;
 import android.Manifest;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.text.Spannable;
@@ -24,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import ru.liner.colorfy.Config;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
 import ru.liner.colorfy.listener.IWallpaperListener;
+import ru.liner.colorfy.utils.Utils;
 
 /**
  * @author : "Line'R"
@@ -71,6 +73,19 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
                     colorfy.requestColors();
             } else {
                 onChanged(wallpaperData);
+            }
+        }
+    }
+
+    @CallSuper
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(colorfy != null){
+            WallpaperData wallpaperData = colorfy.getLastWallpaperData();
+            if(wallpaperData != null && wallpaperData.isDarkTheme != Utils.isNightTheme(this)){
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    colorfy.requestColors();
             }
         }
     }

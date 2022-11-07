@@ -8,6 +8,8 @@ import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
 
+import java.util.Random;
+
 import ru.liner.colorfy.Config;
 
 /**
@@ -61,5 +63,11 @@ public class ColorUtils {
             throw new RuntimeException("Couldn't find background color in theme");
         }
         return color;
+    }
+
+    @ColorInt
+    public static int randomColor(){
+        Random random = new Random();
+        return Color.argb(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 }

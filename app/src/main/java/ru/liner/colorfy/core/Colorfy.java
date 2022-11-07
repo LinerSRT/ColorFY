@@ -98,20 +98,21 @@ public class Colorfy {
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors(boolean force) {
         if(Config.usesCustomColor){
-            WallpaperData wallpaperData = WallpaperData.fromColor(context, Config.customPrimaryColor);
-            if ((currentWallpaperData == null || force)) {
-                currentWallpaperData = wallpaperData;
-                if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                    lastWallpaperData = currentWallpaperData;
-                for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                    dataListener.onChanged(currentWallpaperData);
-            } else if (!currentWallpaperData.isSame(wallpaperData)) {
-                currentWallpaperData = wallpaperData;
-                if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                    lastWallpaperData = currentWallpaperData;
-                for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                    dataListener.onChanged(currentWallpaperData);
-            }
+            WallpaperData.fromColor(context, Config.customPrimaryColor, wallpaperData -> {
+                if ((currentWallpaperData == null || force)) {
+                    currentWallpaperData = wallpaperData;
+                    if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                        lastWallpaperData = currentWallpaperData;
+                    for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                        dataListener.onChanged(currentWallpaperData);
+                } else if (!currentWallpaperData.isSame(wallpaperData)) {
+                    currentWallpaperData = wallpaperData;
+                    if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                        lastWallpaperData = currentWallpaperData;
+                    for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                        dataListener.onChanged(currentWallpaperData);
+                }
+            });
         } else {
             WallpaperData.from(context, getWallpaper(), wallpaperData -> {
                 if (wallpaperData != null) {

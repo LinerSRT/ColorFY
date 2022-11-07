@@ -65,8 +65,13 @@ public class WallpaperData {
         this.textColor = ColorUtils.isColorDark(this.backgroundColor) ? ColorUtils.lightenColor(this.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(this.primaryColor, 1f - Config.textToneAmount);
     }
 
-    public static WallpaperData fromColor(@NonNull Context context, @ColorInt int color) {
-        return new WallpaperData(context, color);
+    public static void fromColor(@NonNull Context context, @ColorInt int color, @NonNull IGenerate generate) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                generate.onGenerated(new WallpaperData(context, color));
+            }
+        }).start();
     }
 
     public static void from(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {

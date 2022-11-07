@@ -52,12 +52,37 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
 
     @CallSuper
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (colorfy != null) {
+            colorfy.removeWallpaperDataListener(this);
+            colorfy.removeWallpaperListener(this);
+        }
+    }
+
+    @CallSuper
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (acceptColorChanged && colorfy != null) {
+            WallpaperData wallpaperData = colorfy.getLastWallpaperData();
+            if (wallpaperData == null) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+                    colorfy.requestColors();
+            } else {
+                onChanged(wallpaperData);
+            }
+        }
+    }
+
+    @CallSuper
+    @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
         rootView = (ViewGroup) ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
         actionBar = getSupportActionBar();
         acceptColorChanged = rootView != null;
-        if (acceptColorChanged && colorfy != null)
+        if (acceptColorChanged && colorfy != null && ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
             colorfy.requestColors();
     }
 

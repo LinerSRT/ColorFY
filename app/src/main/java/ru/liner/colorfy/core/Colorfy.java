@@ -125,6 +125,7 @@ public class Colorfy {
     /**
      * Request colors from installed wallpaper from device
      */
+    @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors() {
         requestColors(false);
     }

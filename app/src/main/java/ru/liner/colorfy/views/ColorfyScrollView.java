@@ -22,7 +22,6 @@ import ru.liner.colorfy.R;
 import ru.liner.colorfy.core.WallpaperData;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
 import ru.liner.colorfy.utils.Reflect;
-import ru.liner.colorfy.utils.Utils;
 
 /**
  * @author : "Line'R"
@@ -40,10 +39,6 @@ public class ColorfyScrollView extends ScrollView implements IWallpaperDataListe
 
     public ColorfyScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-    }
-
-    public ColorfyScrollView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
     }
 
 

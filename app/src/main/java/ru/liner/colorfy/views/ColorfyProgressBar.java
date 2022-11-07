@@ -1,8 +1,6 @@
 package ru.liner.colorfy.views;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ProgressBar;
@@ -28,10 +26,6 @@ public class ColorfyProgressBar extends ProgressBar implements IWallpaperDataLis
 
     public ColorfyProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-    }
-
-    public ColorfyProgressBar(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
     }
 
     @Override

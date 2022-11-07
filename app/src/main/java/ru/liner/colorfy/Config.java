@@ -1,9 +1,9 @@
 package ru.liner.colorfy;
 
-import android.graphics.Color;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
+
+import ru.liner.colorfy.utils.ColorUtils;
 
 /**
  * @author : "Line'R"
@@ -58,5 +58,5 @@ public class Config {
      * Define default primary color for theming
      */
     @ColorInt
-    public static int customPrimaryColor = Color.CYAN;
+    public static int customPrimaryColor = ColorUtils.randomColor();
 }

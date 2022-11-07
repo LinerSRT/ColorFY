@@ -32,6 +32,7 @@ import ru.liner.colorfy.utils.Utils;
  * @mailto : serinity320@mail.com
  * @created : 04.11.2022, пятница
  **/
+@SuppressWarnings("unused")
 public class ColorfyActivity extends AppCompatActivity implements IWallpaperDataListener, IWallpaperListener {
     @Nullable
     protected Colorfy colorfy;
@@ -175,8 +176,7 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    @CallSuper
-    public void setAcceptColorChanged(boolean acceptColorChanged) {
+    protected void setAcceptColorChanged(boolean acceptColorChanged) {
         this.acceptColorChanged = acceptColorChanged;
     }
 }

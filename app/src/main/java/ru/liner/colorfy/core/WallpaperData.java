@@ -66,12 +66,7 @@ public class WallpaperData {
     }
 
     public static void fromColor(@NonNull Context context, @ColorInt int color, @NonNull IGenerate generate) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                generate.onGenerated(new WallpaperData(context, color));
-            }
-        }).start();
+        new Thread(() -> generate.onGenerated(new WallpaperData(context, color))).start();
     }
 
     public static void from(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {
@@ -100,6 +95,7 @@ public class WallpaperData {
         }).start();
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isSame(@NonNull WallpaperData other) {
         return primaryColor == other.primaryColor &&
                 secondaryColor == other.secondaryColor &&
@@ -113,16 +109,14 @@ public class WallpaperData {
     }
 
 
+    @SuppressWarnings("unused")
     public static WallpaperData clone(WallpaperData from) {
         WallpaperData wallpaperData = new WallpaperData(from.bitmap);
         wallpaperData.isDarkTheme = from.isDarkTheme;
         wallpaperData.primaryColor = from.primaryColor;
-        ;
         wallpaperData.secondaryColor = from.secondaryColor;
-        ;
         wallpaperData.textOnPrimaryColor = from.textOnPrimaryColor;
         wallpaperData.textColor = from.textColor;
-        ;
         wallpaperData.backgroundColor = from.backgroundColor;
         return wallpaperData;
     }
@@ -143,6 +137,7 @@ public class WallpaperData {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "WallpaperData{" +

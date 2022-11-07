@@ -200,7 +200,7 @@ public class Colorfy {
      */
     public void removeWallpaperListener(@NonNull IWallpaperListener wallpaper) {
         wallpaperChangedListeners.remove(wallpaper);
-        if (wallpaperChangedListeners.isEmpty()) {
+        if (wallpaperChangedListeners.isEmpty() && wallpaperReceiverRegistered) {
             context.unregisterReceiver(wallpaperChangedReceiver);
             wallpaperReceiverRegistered = false;
         }

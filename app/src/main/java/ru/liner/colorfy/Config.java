@@ -1,5 +1,8 @@
 package ru.liner.colorfy;
 
+import android.graphics.Color;
+
+import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
 
 /**
@@ -46,4 +49,14 @@ public class Config {
      */
     @FloatRange(from = 0.1f, to = 0.4f)
     public static float textToneAmount = 0.1f;
+
+    /**
+     * Define true to use own color for theming
+     */
+    public static boolean usesCustomColor = true;
+    /**
+     * Define default primary color for theming
+     */
+    @ColorInt
+    public static int customPrimaryColor = Color.CYAN;
 }

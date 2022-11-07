@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.service.wallpaper.WallpaperService;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
@@ -20,6 +21,7 @@ import androidx.annotation.RequiresPermission;
 import java.util.LinkedList;
 import java.util.List;
 
+import ru.liner.colorfy.Config;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
 import ru.liner.colorfy.listener.IWallpaperListener;
 import ru.liner.colorfy.utils.Utils;
@@ -74,9 +76,11 @@ public class Colorfy {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_WALLPAPER_CHANGED)) {
-                    for (IWallpaperListener iwallpaper : wallpaperChangedListeners)
-                        iwallpaper.onWallpaperChanged(getWallpaper(), isWallpaperLive());
-                    requestColors(true);
+                    if(!Config.usesCustomColor) {
+                        for (IWallpaperListener iwallpaper : wallpaperChangedListeners)
+                            iwallpaper.onWallpaperChanged(getWallpaper(), isWallpaperLive());
+                        requestColors(true);
+                    }
                 }
             }
         };
@@ -93,23 +97,40 @@ public class Colorfy {
      */
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors(boolean force) {
-        WallpaperData.from(context, getWallpaper(), wallpaperData -> {
-            if(wallpaperData != null){
-                if((currentWallpaperData == null || force)){
-                    currentWallpaperData = wallpaperData;
-                    if(lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                        lastWallpaperData = currentWallpaperData;
-                    for(IWallpaperDataListener dataListener : wallpaperDataListeners)
-                        dataListener.onChanged(currentWallpaperData);
-                } else if(!currentWallpaperData.isSame(wallpaperData)){
-                    currentWallpaperData = wallpaperData;
-                    if(lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                        lastWallpaperData = currentWallpaperData;
-                    for(IWallpaperDataListener dataListener : wallpaperDataListeners)
-                        dataListener.onChanged(currentWallpaperData);
-                }
+        if(Config.usesCustomColor){
+            WallpaperData wallpaperData = WallpaperData.fromColor(context, Config.customPrimaryColor);
+            if ((currentWallpaperData == null || force)) {
+                currentWallpaperData = wallpaperData;
+                if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                    lastWallpaperData = currentWallpaperData;
+                for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                    dataListener.onChanged(currentWallpaperData);
+            } else if (!currentWallpaperData.isSame(wallpaperData)) {
+                currentWallpaperData = wallpaperData;
+                if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                    lastWallpaperData = currentWallpaperData;
+                for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                    dataListener.onChanged(currentWallpaperData);
             }
-        });
+        } else {
+            WallpaperData.from(context, getWallpaper(), wallpaperData -> {
+                if (wallpaperData != null) {
+                    if ((currentWallpaperData == null || force)) {
+                        currentWallpaperData = wallpaperData;
+                        if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                            lastWallpaperData = currentWallpaperData;
+                        for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                            dataListener.onChanged(currentWallpaperData);
+                    } else if (!currentWallpaperData.isSame(wallpaperData)) {
+                        currentWallpaperData = wallpaperData;
+                        if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
+                            lastWallpaperData = currentWallpaperData;
+                        for (IWallpaperDataListener dataListener : wallpaperDataListeners)
+                            dataListener.onChanged(currentWallpaperData);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -128,6 +149,26 @@ public class Colorfy {
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors() {
         requestColors(false);
+    }
+
+    /**
+     * Call from anywhere to use own color for theming
+     * @param value true for enable
+     */
+    public void setUseCustomColor(boolean value){
+        Config.usesCustomColor = value;
+        requestColors(true);
+    }
+
+    /**
+     * Call from anywhere to use own color for theming
+     * @param value true for enable
+     * @param color color for theming
+     */
+    public void setUseCustomColor(boolean value, @ColorInt int color){
+        Config.usesCustomColor = value;
+        Config.customPrimaryColor = color;
+        requestColors(true);
     }
 
     /**

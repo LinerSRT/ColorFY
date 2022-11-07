@@ -2,6 +2,7 @@ package ru.liner.colorfy.core;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -17,7 +18,7 @@ import ru.liner.colorfy.utils.Utils;
  * @created : 04.11.2022, пятница
  **/
 public class WallpaperData {
-    @NonNull
+    private static final float MIN_CONTRAST_BODY_TEXT = 4.5f;
     public Bitmap bitmap;
     @ColorInt
     public int primaryColor;
@@ -30,12 +31,14 @@ public class WallpaperData {
     @ColorInt
     public int backgroundColor;
     public boolean isDarkTheme;
+    public boolean isCustomData;
+    private boolean isTextColorGenerated;
 
     private WallpaperData(@NonNull Context context, @NonNull Bitmap bitmap) {
         this.bitmap = bitmap;
-        if(Config.forceDayTheme){
+        if (Config.forceDayTheme) {
             this.isDarkTheme = false;
-        } else if(Config.forceNightTheme){
+        } else if (Config.forceNightTheme) {
             this.isDarkTheme = true;
         } else {
             this.isDarkTheme = Utils.isNightTheme(context);
@@ -46,28 +49,48 @@ public class WallpaperData {
         this.bitmap = bitmap;
     }
 
+    private WallpaperData(Context context, @ColorInt int primaryColor) {
+        if (Config.forceDayTheme) {
+            this.isDarkTheme = false;
+        } else if (Config.forceNightTheme) {
+            this.isDarkTheme = true;
+        } else {
+            this.isDarkTheme = Utils.isNightTheme(context);
+        }
+        this.isCustomData = true;
+        this.primaryColor = primaryColor;
+        this.secondaryColor = ColorUtils.darkerColor(primaryColor, 0.2f);
+        ensureTextColorsGenerated();
+        this.backgroundColor = this.isDarkTheme ? ColorUtils.darkerColor(this.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(this.primaryColor, Config.backgroundToneAmount);
+        this.textColor = ColorUtils.isColorDark(this.backgroundColor) ? ColorUtils.lightenColor(this.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(this.primaryColor, 1f - Config.textToneAmount);
+    }
+
+    public static WallpaperData fromColor(@NonNull Context context, @ColorInt int color) {
+        return new WallpaperData(context, color);
+    }
+
     public static void from(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {
         WallpaperData wallpaperData = new WallpaperData(context, bitmap);
         new Thread(() -> {
             Palette palette = Palette.from(bitmap).generate();
             Palette.Swatch swatch = palette.getVibrantSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getLightVibrantSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getDarkVibrantSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getDarkMutedSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getDarkVibrantSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getLightMutedSwatch();
-            if(swatch == null)
+            if (swatch == null)
                 swatch = palette.getDarkMutedSwatch();
             wallpaperData.primaryColor = swatch.getRgb();
             wallpaperData.secondaryColor = ColorUtils.darkerColor(wallpaperData.primaryColor, 0.2f);
             wallpaperData.textOnPrimaryColor = swatch.getBodyTextColor();
-            wallpaperData.backgroundColor =	wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
-            wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f-Config.textToneAmount);
+            wallpaperData.backgroundColor = wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
+            wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.textToneAmount);
             generate.onGenerated(wallpaperData);
         }).start();
     }
@@ -80,22 +103,40 @@ public class WallpaperData {
                 backgroundColor == other.backgroundColor;
     }
 
-    public interface IGenerate{
+    public interface IGenerate {
         void onGenerated(WallpaperData wallpaperData);
     }
 
 
-
-  public static WallpaperData clone(WallpaperData from){
+    public static WallpaperData clone(WallpaperData from) {
         WallpaperData wallpaperData = new WallpaperData(from.bitmap);
         wallpaperData.isDarkTheme = from.isDarkTheme;
-        wallpaperData.primaryColor = from.primaryColor;;
-        wallpaperData.secondaryColor = from.secondaryColor;;
+        wallpaperData.primaryColor = from.primaryColor;
+        ;
+        wallpaperData.secondaryColor = from.secondaryColor;
+        ;
         wallpaperData.textOnPrimaryColor = from.textOnPrimaryColor;
-        wallpaperData.textColor = from.textColor;;
+        wallpaperData.textColor = from.textColor;
+        ;
         wallpaperData.backgroundColor = from.backgroundColor;
         return wallpaperData;
-  }
+    }
+
+    private void ensureTextColorsGenerated() {
+        if (!isTextColorGenerated) {
+            final int lightBodyAlpha = androidx.core.graphics.ColorUtils.calculateMinimumAlpha(Color.WHITE, primaryColor, MIN_CONTRAST_BODY_TEXT);
+            if (lightBodyAlpha != -1) {
+                textOnPrimaryColor = androidx.core.graphics.ColorUtils.setAlphaComponent(Color.WHITE, lightBodyAlpha);
+                isTextColorGenerated = true;
+                return;
+            }
+            final int darkBodyAlpha = androidx.core.graphics.ColorUtils.calculateMinimumAlpha(Color.BLACK, primaryColor, MIN_CONTRAST_BODY_TEXT);
+            if (darkBodyAlpha != -1) {
+                textOnPrimaryColor = androidx.core.graphics.ColorUtils.setAlphaComponent(Color.BLACK, darkBodyAlpha);
+                isTextColorGenerated = true;
+            }
+        }
+    }
 
     @Override
     public String toString() {

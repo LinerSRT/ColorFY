@@ -1,5 +1,7 @@
 package ru.liner.colorfy;
 
+import android.graphics.Color;
+
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
 
@@ -53,10 +55,19 @@ public class Config {
     /**
      * Define true to use own color for theming
      */
-    public static boolean usesCustomColor = true;
+    public static boolean usesCustomColor = false;
     /**
      * Define default primary color for theming
      */
     @ColorInt
-    public static int customPrimaryColor = ColorUtils.randomColor();
+    public static int customPrimaryColor = Color.RED;
+
+    /**
+     * Try to detect most common color for human eye automatically
+     */
+    public static boolean usesAutomaticSwatchFiltering = true;
+    /**
+     * Use most luminance color from automatic detected colors, if its false - use average color
+     */
+    public static boolean usesMostLuminanceDetectedSwatch = false;
 }

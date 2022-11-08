@@ -1,7 +1,5 @@
 package ru.liner.colorfy.utils;
 
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.TypedValue;
@@ -9,8 +7,6 @@ import android.util.TypedValue;
 import androidx.annotation.ColorInt;
 
 import java.util.Random;
-
-import ru.liner.colorfy.Config;
 
 /**
  * @author : "Line'R"
@@ -34,6 +30,18 @@ public class ColorUtils {
 
     public static boolean isColorLight(@ColorInt int color) {
         return !isColorDark(color);
+    }
+
+    public static boolean isGray(@ColorInt int color) {
+        int red = (color >> 16) & 0xff;
+        int green = (color >> 8) & 0xff;
+        int blue = (color) & 0xff;
+        int redGreenChannelDifference = red - green;
+        int redBlueChannelDifference = red - blue;
+        int tolerance = 10;
+        if (redGreenChannelDifference > tolerance || redGreenChannelDifference < -tolerance)
+            return redBlueChannelDifference <= tolerance && redBlueChannelDifference >= -tolerance;
+        return true;
     }
 
     @ColorInt
@@ -66,7 +74,7 @@ public class ColorUtils {
     }
 
     @ColorInt
-    public static int randomColor(){
+    public static int randomColor() {
         Random random = new Random();
         return Color.argb(255, random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }

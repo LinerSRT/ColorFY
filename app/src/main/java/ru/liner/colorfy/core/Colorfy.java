@@ -10,9 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
+import android.widget.Button;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -260,5 +262,10 @@ public class Colorfy {
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public Bitmap getWallpaper() {
         return Utils.drawableToBitmap(isWallpaperLive() ? wallpaperManager.getWallpaperInfo().loadThumbnail(packageManager) : wallpaperManager.getDrawable());
+    }
+
+    public static void apply(@NonNull Button button, @NonNull WallpaperData wallpaperData){
+        button.setBackgroundTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
+        button.setTextColor(wallpaperData.textOnPrimaryColor);
     }
 }

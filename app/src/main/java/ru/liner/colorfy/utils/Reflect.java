@@ -1,5 +1,6 @@
 package ru.liner.colorfy.utils;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.reflect.Field;
@@ -14,66 +15,11 @@ import java.lang.reflect.Method;
 public class Reflect {
 
     @Nullable
-    public static Field findField(Class<?> clazz, String fieldName){
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return field;
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-            Class<?> superClass = clazz.getSuperclass();
-            if(superClass != null)
-                return findField(superClass, fieldName);
-            return null;
-        }
-    }
-    @Nullable
-    public static Method findMethod(Class<?> clazz, String methodName, Class<?> ... params){
-        try {
-            Method method = clazz.getDeclaredMethod(methodName, params);
-            method.setAccessible(true);
-            return method;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            Class<?> superClass = clazz.getSuperclass();
-            if(superClass != null)
-                return findMethod(superClass, methodName, params);
-            return null;
-        }
-    }
-
-    @Nullable
-    public static Object getFieldValue(Object obj, String fieldName) {
-        Object result = null;
-        try {
-            Field field = obj.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            result = field.get(obj);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-    @Nullable
-    public static Object getFieldValue(Class<?> clazz, Object obj, String fieldName) {
-        Object result = null;
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            result = field.get(obj);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    @Nullable
-    public static Object getField(Object obj, String fieldName){
-        Field field = searchFiled(obj.getClass(), fieldName);
-        if(field != null){
-            field.setAccessible(true);
+    public static Object getFieldSafety(@NonNull Object o, String filedName) {
+        Field field = findField(o.getClass(), filedName);
+        if (field != null) {
             try {
-                return field.get(obj);
+                return field.get(o);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -81,63 +27,61 @@ public class Reflect {
         return null;
     }
 
+    public static boolean setFieldSafety(@NonNull Object o, String filedName, @Nullable Object value) {
+        Field field = findField(o.getClass(), filedName);
+        if (field != null) {
+            try {
+                field.set(o, value);
+                return true;
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
     @Nullable
-    public static Field searchFiled(Class<?> clazz, String fieldName) {
-        if (clazz == null)
+    public static Field findField(Class<?> clazz, String fieldName) {
+        try {
+            Field field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field;
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null)
+                return findField(superClass, fieldName);
             return null;
-        try {
-            return clazz.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-            return searchFiled(clazz.getSuperclass(), fieldName);
         }
     }
 
-    public static void setFieldValue(Object obj, String fieldName, Object value) {
-        Class<?> clazz = obj.getClass();
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(obj, value);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-            Class<?> superClass;
-            while ((superClass = clazz.getSuperclass()) != null) {
-                try {
-                    Field field = superClass.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    field.set(obj, value);
-                    break;
-                } catch (NoSuchFieldException | IllegalAccessException noSuchFieldException) {
-                    noSuchFieldException.printStackTrace();
-                }
+    @Nullable
+    public static Object invokeSafety(@Nullable Object o, String methodName, Class<?>[] params, Object... objects) {
+        if(o == null)
+            return null;
+        Method method = findMethod(o.getClass(), methodName, params);
+        if(method != null){
+            try {
+                return method.invoke(o, objects);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
+        return null;
     }
 
-    public static void setFieldValue(Object obj, String fieldName, Object... values) {
-        Class<?> clazz = obj.getClass();
+    @Nullable
+    public static Method findMethod(Class<?> clazz, String methodName, Class<?>... params) {
         try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(obj, values);
-        } catch (NoSuchFieldException e) {
+            Method method = clazz.getDeclaredMethod(methodName, params);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException e) {
             e.printStackTrace();
-            Class<?> superClass;
-            while ((superClass = clazz.getSuperclass()) != null) {
-                try {
-                    Field field = superClass.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    field.set(obj, values);
-                    break;
-                } catch (NoSuchFieldException | IllegalAccessException noSuchFieldException) {
-                    noSuchFieldException.printStackTrace();
-                }
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            Class<?> superClass = clazz.getSuperclass();
+            if (superClass != null)
+                return findMethod(superClass, methodName, params);
+            return null;
         }
     }
 

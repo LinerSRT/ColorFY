@@ -7,14 +7,34 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ru.liner.colorfy.views.ColorfyButton
-        android:id="@+id/autoColor"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/layoutttt"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Switch automatic color"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ru.liner.colorfy.views.ColorfyButton
+            android:id="@+id/autoLuminanceColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Switch automatic luminance" />
+
+        <ru.liner.colorfy.views.ColorfyButton
+            android:id="@+id/autoColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Switch automatic color" />
+        <ru.liner.colorfy.views.ColorfyButton
+            android:id="@+id/alertDialogTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alert dialog" />
+    </LinearLayout>
+
 
     <ru.liner.colorfy.views.ColorfyTextView
         android:id="@+id/colorfyTextView"
@@ -24,7 +44,7 @@
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/autoColor" />
+        app:layout_constraintTop_toBottomOf="@+id/layoutttt" />
 
 
     <ImageView
@@ -52,12 +72,13 @@
             android:layout_marginEnd="8dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -90,7 +111,7 @@
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -118,12 +139,13 @@
                     android:layout_height="wrap_content"
                     android:indeterminate="true" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -153,12 +175,13 @@
                     android:layout_height="wrap_content"
                     android:indeterminate="true" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -184,12 +207,13 @@
                     android:layout_width="150dp"
                     android:layout_height="wrap_content" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -204,9 +228,9 @@
 
                 <ru.liner.colorfy.views.ColorfySwitch
                     android:layout_width="150dp"
+                    android:layout_height="wrap_content"
                     android:checked="true"
                     android:text="Colorfy"
-                    android:layout_height="wrap_content"
                     tools:ignore="UseSwitchCompatOrMaterialXml" />
 
                 <View
@@ -216,16 +240,17 @@
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:layout_width="150dp"
+                    android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Android"
-                    android:layout_height="wrap_content" />
+                    android:text="Android" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -240,9 +265,9 @@
 
                 <ru.liner.colorfy.views.ColorfyCheckbox
                     android:layout_width="150dp"
-                    android:text="Colorfy"
-                    android:checked="true"
                     android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Colorfy"
                     tools:ignore="UseSwitchCompatOrMaterialXml" />
 
                 <View
@@ -252,16 +277,17 @@
 
                 <androidx.appcompat.widget.AppCompatCheckBox
                     android:layout_width="150dp"
-                    android:text="Android"
+                    android:layout_height="wrap_content"
                     android:checked="true"
-                    android:layout_height="wrap_content" />
+                    android:text="Android" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -276,8 +302,8 @@
 
                 <ru.liner.colorfy.views.ColorfyRadioButton
                     android:layout_width="wrap_content"
-                    android:text="Colorfy"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:text="Colorfy" />
 
                 <View
                     android:layout_width="0dp"
@@ -287,14 +313,15 @@
                 <androidx.appcompat.widget.AppCompatRadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Android"/>
+                    android:text="Android" />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="2dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="#212121"/>
+                android:background="#212121" />
 
             <ru.liner.colorfy.views.ColorfyTextView
                 android:layout_width="wrap_content"
@@ -309,7 +336,7 @@
 
                 <ru.liner.colorfy.views.ColorfyEditText
                     android:layout_width="150dp"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content" />
 
                 <View
                     android:layout_width="0dp"
@@ -318,9 +345,9 @@
 
                 <androidx.appcompat.widget.AppCompatEditText
                     android:layout_width="150dp"
-                    android:text="asdasdasd"
+                    android:layout_height="wrap_content"
                     android:backgroundTint="#990000"
-                    android:layout_height="wrap_content"/>
+                    android:text="asdasdasd" />
             </LinearLayout>
         </LinearLayout>
     </ru.liner.colorfy.views.ColorfyScrollView>

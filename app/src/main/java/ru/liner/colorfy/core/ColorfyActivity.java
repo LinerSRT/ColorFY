@@ -58,10 +58,8 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     protected void onPause() {
         super.onPause();
         if (colorfy != null && Config.automaticListenersLifecycle) {
-            if (colorfy.containWallpaperDataListener(this))
-                colorfy.removeWallpaperDataListener(this);
-            if (colorfy.containWallpaperListener(this))
-                colorfy.removeWallpaperListener(this);
+            colorfy.removeWallpaperDataListener(this);
+            colorfy.removeWallpaperListener(this);
         }
     }
 
@@ -71,10 +69,8 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         super.onResume();
         if (acceptColorChanged && colorfy != null) {
             if (Config.automaticListenersLifecycle) {
-                if (!colorfy.containWallpaperDataListener(this))
-                    colorfy.addWallpaperDataListener(this);
-                if (!colorfy.containWallpaperListener(this))
-                    colorfy.addWallpaperListener(this);
+                colorfy.addWallpaperDataListener(this);
+                colorfy.addWallpaperListener(this);
             }
             WallpaperData wallpaperData = colorfy.getLastWallpaperData();
             if (wallpaperData == null) {

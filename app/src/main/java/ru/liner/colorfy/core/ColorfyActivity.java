@@ -57,9 +57,11 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     @Override
     protected void onPause() {
         super.onPause();
-        if (colorfy != null) {
-            colorfy.removeWallpaperDataListener(this);
-            colorfy.removeWallpaperListener(this);
+        if (colorfy != null && Config.automaticListenersLifecycle) {
+            if (colorfy.containWallpaperDataListener(this))
+                colorfy.removeWallpaperDataListener(this);
+            if (colorfy.containWallpaperListener(this))
+                colorfy.removeWallpaperListener(this);
         }
     }
 
@@ -68,6 +70,12 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     protected void onResume() {
         super.onResume();
         if (acceptColorChanged && colorfy != null) {
+            if (Config.automaticListenersLifecycle) {
+                if (!colorfy.containWallpaperDataListener(this))
+                    colorfy.addWallpaperDataListener(this);
+                if (!colorfy.containWallpaperListener(this))
+                    colorfy.addWallpaperListener(this);
+            }
             WallpaperData wallpaperData = colorfy.getLastWallpaperData();
             if (wallpaperData == null) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
@@ -82,9 +90,9 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if(colorfy != null){
+        if (colorfy != null) {
             WallpaperData wallpaperData = colorfy.getLastWallpaperData();
-            if(wallpaperData != null && wallpaperData.isDarkTheme != Utils.isNightTheme(this)){
+            if (wallpaperData != null && wallpaperData.isDarkTheme != Utils.isNightTheme(this)) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
                     colorfy.requestColors();
             }

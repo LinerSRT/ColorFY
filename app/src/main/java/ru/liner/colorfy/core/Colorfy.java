@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -193,6 +194,26 @@ public class Colorfy {
     public void addWallpaperDataListener(@NonNull IWallpaperDataListener wallpaperDataListener) {
         wallpaperDataListeners.add(wallpaperDataListener);
     }
+
+    /**
+     * Detect registered listener or not
+     * @param wallpaperDataListener listener
+     * @return true if listener registered
+     */
+    public boolean containWallpaperDataListener(@NonNull IWallpaperDataListener wallpaperDataListener){
+        return wallpaperDataListeners.contains(wallpaperDataListener);
+    }
+
+
+    /**
+     * Detect registered listener or not
+     * @param wallpaperListener listener
+     * @return true if listener registered
+     */
+    public boolean containWallpaperListener(@NonNull IWallpaperListener wallpaperListener){
+        return wallpaperChangedListeners.contains(wallpaperListener);
+    }
+
 
     /**
      * Unsubscribe from wallpaper changes

@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ru.liner.colorfy.views.ColorfyButton
+        android:id="@+id/autoColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch automatic color"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ru.liner.colorfy.views.ColorfyTextView
         android:id="@+id/colorfyTextView"
         android:layout_width="wrap_content"
@@ -15,7 +24,7 @@
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/autoColor" />
 
 
     <ImageView

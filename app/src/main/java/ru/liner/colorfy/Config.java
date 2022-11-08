@@ -70,4 +70,9 @@ public class Config {
      * Use most luminance color from automatic detected colors, if its false - use average color
      */
     public static boolean usesMostLuminanceDetectedSwatch = false;
+
+    /**
+     * Register and unregister wallpaper colors listeners on activity lifecycle
+     */
+    public static boolean automaticListenersLifecycle = false;
 }

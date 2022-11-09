@@ -30,7 +30,11 @@ public class ColorfyTextView extends AppCompatTextView implements IWallpaperData
 
     @Override
     public void onChanged(@NonNull WallpaperData wallpaperData) {
-        setTextColor(wallpaperData.textColor);
-        setLinkTextColor(wallpaperData.secondaryColor);
+        if(isEnabled()) {
+            setTextColor(wallpaperData.textColor);
+            setLinkTextColor(wallpaperData.secondaryColor);
+        } else {
+            setTextColor(wallpaperData.disabledTextColor);
+        }
     }
 }

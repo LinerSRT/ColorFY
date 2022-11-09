@@ -73,7 +73,7 @@ public class WallpaperData {
 
             wallpaperData.backgroundColor = wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
             wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.textToneAmount);
-            wallpaperData.disabledTextColor = ColorUtils.mixedColor(wallpaperData.textColor, Color.GRAY, 0.9f);
+            wallpaperData.disabledTextColor = ColorUtils.mixedColor(Color.LTGRAY, wallpaperData.textColor, 0.3f);
             generate.onGenerated(wallpaperData);
         }).start();
     }
@@ -113,7 +113,7 @@ public class WallpaperData {
 
             wallpaperData.backgroundColor = wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
             wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.textToneAmount);
-            wallpaperData.disabledTextColor = ColorUtils.mixedColor(wallpaperData.textColor, Color.GRAY, 0.9f);
+            wallpaperData.disabledTextColor = ColorUtils.mixedColor(Color.LTGRAY, wallpaperData.textColor, 0.3f);
             generate.onGenerated(wallpaperData);
         }).start();
     }

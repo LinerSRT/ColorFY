@@ -10,7 +10,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -59,8 +58,8 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     protected void onPause() {
         super.onPause();
         if (colorfy != null && Config.automaticListenersLifecycle) {
-            colorfy.removeWallpaperDataListener(getClass().getSimpleName(),this);
-            colorfy.removeWallpaperListener(getClass().getSimpleName(),this);
+            colorfy.removeWallpaperDataListener(getClass().getSimpleName(), this);
+            colorfy.removeWallpaperListener(getClass().getSimpleName(), this);
         }
     }
 
@@ -114,8 +113,14 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         super.onAttachFragment(fragment);
         if (colorfy == null)
             return;
+
         WallpaperData wallpaperData = colorfy.getLastWallpaperData();
-        if (wallpaperData != null && Config.changeFragmentBackground) {
+        if(wallpaperData == null)
+            return;
+        if (fragment instanceof IWallpaperDataListener) {
+            ((IWallpaperDataListener) fragment).onChanged(wallpaperData);
+        }
+        if (Config.changeFragmentBackground) {
             ViewGroup fragmentView = (ViewGroup) fragment.getView();
             if (fragmentView != null && fragmentView.getChildCount() >= 1) {
                 View fragmentRootView = fragmentView.getChildAt(0);

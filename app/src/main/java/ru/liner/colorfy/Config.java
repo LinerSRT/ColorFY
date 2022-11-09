@@ -68,7 +68,7 @@ public class Config {
     public static boolean automaticListenersLifecycle = true;
 
     /**
-     * Enable colors switching in current wallpaper
+     * Enable colors switching in current wallpaper, not working with enabled "usesCustomColor"
      */
     public static boolean enableColorsSwitch = true;
 

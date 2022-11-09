@@ -74,5 +74,5 @@ public class Config {
     /**
      * Register and unregister wallpaper colors listeners on activity lifecycle
      */
-    public static boolean automaticListenersLifecycle = false;
+    public static boolean automaticListenersLifecycle = true;
 }

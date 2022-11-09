@@ -10,6 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -46,8 +47,8 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     protected void onStart() {
         super.onStart();
         colorfy = Colorfy.getInstance(this);
-        colorfy.addWallpaperDataListener(this);
-        colorfy.addWallpaperListener(this);
+        colorfy.addWallpaperDataListener(getClass().getSimpleName(), this);
+        colorfy.addWallpaperListener(getClass().getSimpleName(), this);
         window = getWindow();
         acceptColorChanged = false;
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 4879);
@@ -58,8 +59,8 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     protected void onPause() {
         super.onPause();
         if (colorfy != null && Config.automaticListenersLifecycle) {
-            colorfy.removeWallpaperDataListener(this);
-            colorfy.removeWallpaperListener(this);
+            colorfy.removeWallpaperDataListener(getClass().getSimpleName(),this);
+            colorfy.removeWallpaperListener(getClass().getSimpleName(),this);
         }
     }
 
@@ -67,15 +68,16 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     @Override
     protected void onResume() {
         super.onResume();
-        if (acceptColorChanged && colorfy != null) {
+        acceptColorChanged = rootView != null;
+        if (colorfy != null) {
             if (Config.automaticListenersLifecycle) {
-                colorfy.addWallpaperDataListener(this);
-                colorfy.addWallpaperListener(this);
+                colorfy.addWallpaperDataListener(getClass().getSimpleName(), this);
+                colorfy.addWallpaperListener(getClass().getSimpleName(), this);
             }
             WallpaperData wallpaperData = colorfy.getLastWallpaperData();
             if (wallpaperData == null) {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-                    colorfy.requestColors();
+                    colorfy.requestColors(true);
             } else {
                 onChanged(wallpaperData);
             }
@@ -178,9 +180,5 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    protected void setAcceptColorChanged(boolean acceptColorChanged) {
-        this.acceptColorChanged = acceptColorChanged;
     }
 }

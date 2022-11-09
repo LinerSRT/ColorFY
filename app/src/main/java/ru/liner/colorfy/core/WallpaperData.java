@@ -38,6 +38,8 @@ public class WallpaperData {
     @ColorInt
     public int textColor;
     @ColorInt
+    public int disabledTextColor;
+    @ColorInt
     public int backgroundColor;
     public boolean isDarkTheme;
     public boolean isCustomData;
@@ -78,7 +80,7 @@ public class WallpaperData {
         new Thread(() -> generate.onGenerated(new WallpaperData(context, color))).start();
     }
 
-    public static void from(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {
+    public static void fromBitmap(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {
         WallpaperData wallpaperData = new WallpaperData(context, bitmap);
         new Thread(() -> {
 

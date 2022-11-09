@@ -21,8 +21,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ru.liner.colorfy.Config;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
@@ -38,15 +41,16 @@ import ru.liner.colorfy.utils.Utils;
  **/
 @SuppressWarnings({"deprecation", "unused"})
 @SuppressLint("MissingPermission,StaticFieldLeak")
-public class Colorfy {
+public class Colorfy implements WallpaperData.IGenerate {
+    private static final String TAG = Colorfy.class.getSimpleName();
     private static Colorfy INSTANCE;
     private final Context context;
     private boolean wallpaperReceiverRegistered;
     private final WallpaperManager wallpaperManager;
     private final PackageManager packageManager;
     private final BroadcastReceiver wallpaperChangedReceiver;
-    private final LinkedList<IWallpaperListener> wallpaperChangedListeners;
-    private final LinkedList<IWallpaperDataListener> wallpaperDataListeners;
+    private final HashMap<String, IWallpaperListener> wallpaperChangedListeners;
+    private final HashMap<String, IWallpaperDataListener> wallpaperDataListeners;
     @Nullable
     private WallpaperData currentWallpaperData;
     @Nullable
@@ -70,8 +74,8 @@ public class Colorfy {
      * @param context ActivityContext or ApplicationContext
      */
     private Colorfy(Context context) {
-        this.wallpaperChangedListeners = new LinkedList<>();
-        this.wallpaperDataListeners = new LinkedList<>();
+        this.wallpaperChangedListeners = new HashMap<>();
+        this.wallpaperDataListeners = new HashMap<>();
         this.context = context;
         this.wallpaperManager = WallpaperManager.getInstance(context);
         this.packageManager = context.getPackageManager();
@@ -79,9 +83,10 @@ public class Colorfy {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(Intent.ACTION_WALLPAPER_CHANGED)) {
-                    if(!Config.usesCustomColor) {
-                        for (IWallpaperListener iwallpaper : wallpaperChangedListeners)
-                            iwallpaper.onWallpaperChanged(getWallpaper(), isWallpaperLive());
+                    if (!Config.usesCustomColor) {
+                        if (!wallpaperChangedListeners.isEmpty())
+                            for (Map.Entry<String, IWallpaperListener> entry : wallpaperChangedListeners.entrySet())
+                                entry.getValue().onWallpaperChanged(getWallpaper(), isWallpaperLive());
                         requestColors(true);
                     }
                 }
@@ -92,6 +97,33 @@ public class Colorfy {
     }
 
 
+    @Override
+    public void onGenerated(WallpaperData wallpaperData) {
+        if (wallpaperData != null) {
+            if (currentWallpaperData != null && !currentWallpaperData.isSame(wallpaperData)) {
+                if (lastWallpaperData == null || !lastWallpaperData.isSame(currentWallpaperData))
+                    lastWallpaperData = currentWallpaperData;
+                if (!wallpaperDataListeners.isEmpty())
+                    for (Map.Entry<String, IWallpaperDataListener> entry : wallpaperDataListeners.entrySet())
+                        entry.getValue().onChanged(currentWallpaperData);
+            } else if (currentWallpaperData == null) {
+                currentWallpaperData = wallpaperData;
+                lastWallpaperData = currentWallpaperData;
+                if (!wallpaperDataListeners.isEmpty())
+                    for (Map.Entry<String, IWallpaperDataListener> entry : wallpaperDataListeners.entrySet())
+                        entry.getValue().onChanged(currentWallpaperData);
+            }
+        } else if (currentWallpaperData != null) {
+            if (!wallpaperDataListeners.isEmpty())
+                for (Map.Entry<String, IWallpaperDataListener> entry : wallpaperDataListeners.entrySet())
+                    entry.getValue().onChanged(currentWallpaperData);
+        } else if(lastWallpaperData != null){
+            if (!wallpaperDataListeners.isEmpty())
+                for (Map.Entry<String, IWallpaperDataListener> entry : wallpaperDataListeners.entrySet())
+                    entry.getValue().onChanged(currentWallpaperData);
+        }
+    }
+
     /**
      * Request colors from installed wallpaper from device
      *
@@ -100,46 +132,21 @@ public class Colorfy {
      */
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
     public void requestColors(boolean force) {
-        if(Config.usesCustomColor){
-            WallpaperData.fromColor(context, Config.customPrimaryColor, wallpaperData -> {
-                if ((currentWallpaperData == null || force)) {
-                    currentWallpaperData = wallpaperData;
-                    if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                        lastWallpaperData = currentWallpaperData;
-                    for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                        dataListener.onChanged(currentWallpaperData);
-                } else if (!currentWallpaperData.isSame(wallpaperData)) {
-                    currentWallpaperData = wallpaperData;
-                    if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                        lastWallpaperData = currentWallpaperData;
-                    for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                        dataListener.onChanged(currentWallpaperData);
-                }
-            });
+        if (force) {
+            currentWallpaperData = null;
+            lastWallpaperData = null;
+        }
+        if (Config.usesCustomColor) {
+            WallpaperData.fromColor(context, Config.customPrimaryColor, this);
         } else {
-            WallpaperData.from(context, getWallpaper(), wallpaperData -> {
-                if (wallpaperData != null) {
-                    if ((currentWallpaperData == null || force)) {
-                        currentWallpaperData = wallpaperData;
-                        if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                            lastWallpaperData = currentWallpaperData;
-                        for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                            dataListener.onChanged(currentWallpaperData);
-                    } else if (!currentWallpaperData.isSame(wallpaperData)) {
-                        currentWallpaperData = wallpaperData;
-                        if (lastWallpaperData == null || !currentWallpaperData.isSame(lastWallpaperData))
-                            lastWallpaperData = currentWallpaperData;
-                        for (IWallpaperDataListener dataListener : wallpaperDataListeners)
-                            dataListener.onChanged(currentWallpaperData);
-                    }
-                }
-            });
+            WallpaperData.fromBitmap(context, getWallpaper(), this);
         }
     }
 
 
     /**
      * Get last known wallpaper data
+     *
      * @return wallpaper data
      */
     @Nullable
@@ -157,19 +164,21 @@ public class Colorfy {
 
     /**
      * Call from anywhere to use own color for theming
+     *
      * @param value true for enable
      */
-    public void setUseCustomColor(boolean value){
+    public void setUseCustomColor(boolean value) {
         Config.usesCustomColor = value;
         requestColors(true);
     }
 
     /**
      * Call from anywhere to use own color for theming
+     *
      * @param value true for enable
      * @param color color for theming
      */
-    public void setUseCustomColor(boolean value, @ColorInt int color){
+    public void setUseCustomColor(boolean value, @ColorInt int color) {
         Config.usesCustomColor = value;
         Config.customPrimaryColor = color;
         requestColors(true);
@@ -180,12 +189,14 @@ public class Colorfy {
      *
      * @param wallpaper interface
      */
-    public void addWallpaperListener(@NonNull IWallpaperListener wallpaper) {
+    public void addWallpaperListener(@NonNull String className, @NonNull IWallpaperListener wallpaper) {
         if (!wallpaperReceiverRegistered) {
             context.registerReceiver(wallpaperChangedReceiver, new IntentFilter(Intent.ACTION_WALLPAPER_CHANGED));
             wallpaperReceiverRegistered = true;
         }
-        wallpaperChangedListeners.add(wallpaper);
+        if (containWallpaperListener(className))
+            return;
+        wallpaperChangedListeners.put(className, wallpaper);
     }
 
     /**
@@ -193,27 +204,37 @@ public class Colorfy {
      *
      * @param wallpaperDataListener interface
      */
-    public void addWallpaperDataListener(@NonNull IWallpaperDataListener wallpaperDataListener) {
-        wallpaperDataListeners.add(wallpaperDataListener);
+    public void addWallpaperDataListener(@NonNull String className, @NonNull IWallpaperDataListener wallpaperDataListener) {
+        if (containWallpaperDataListener(className))
+            return;
+        wallpaperDataListeners.put(className, wallpaperDataListener);
     }
 
     /**
      * Detect registered listener or not
-     * @param wallpaperDataListener listener
+     *
+     * @param className class name where listener was added
      * @return true if listener registered
      */
-    public boolean containWallpaperDataListener(@NonNull IWallpaperDataListener wallpaperDataListener){
-        return wallpaperDataListeners.contains(wallpaperDataListener);
+    public boolean containWallpaperDataListener(@NonNull String className) {
+        for (Map.Entry<String, IWallpaperDataListener> entry : wallpaperDataListeners.entrySet())
+            if (entry.getKey().equals(className))
+                return true;
+        return false;
     }
 
 
     /**
      * Detect registered listener or not
-     * @param wallpaperListener listener
+     *
+     * @param className class name where listener was added
      * @return true if listener registered
      */
-    public boolean containWallpaperListener(@NonNull IWallpaperListener wallpaperListener){
-        return wallpaperChangedListeners.contains(wallpaperListener);
+    public boolean containWallpaperListener(@NonNull String className) {
+        for (Map.Entry<String, IWallpaperListener> entry : wallpaperChangedListeners.entrySet())
+            if (entry.getKey().equals(className))
+                return true;
+        return false;
     }
 
 
@@ -222,8 +243,10 @@ public class Colorfy {
      *
      * @param wallpaper interface
      */
-    public void removeWallpaperListener(@NonNull IWallpaperListener wallpaper) {
-        wallpaperChangedListeners.remove(wallpaper);
+    public void removeWallpaperListener(@NonNull String className, @NonNull IWallpaperListener wallpaper) {
+        if (!containWallpaperListener(className))
+            return;
+        wallpaperChangedListeners.remove(className);
         if (wallpaperChangedListeners.isEmpty() && wallpaperReceiverRegistered) {
             context.unregisterReceiver(wallpaperChangedReceiver);
             wallpaperReceiverRegistered = false;
@@ -235,8 +258,10 @@ public class Colorfy {
      *
      * @param wallpaperDataListener interface
      */
-    public void removeWallpaperDataListener(@NonNull IWallpaperDataListener wallpaperDataListener) {
-        wallpaperDataListeners.remove(wallpaperDataListener);
+    public void removeWallpaperDataListener(@NonNull String className, @NonNull IWallpaperDataListener wallpaperDataListener) {
+        if (!containWallpaperDataListener(className))
+            return;
+        wallpaperDataListeners.remove(className);
     }
 
     /**
@@ -264,8 +289,9 @@ public class Colorfy {
         return Utils.drawableToBitmap(isWallpaperLive() ? wallpaperManager.getWallpaperInfo().loadThumbnail(packageManager) : wallpaperManager.getDrawable());
     }
 
-    public static void apply(@NonNull Button button, @NonNull WallpaperData wallpaperData){
+    public static void apply(@NonNull Button button, @NonNull WallpaperData wallpaperData) {
         button.setBackgroundTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
         button.setTextColor(wallpaperData.textOnPrimaryColor);
     }
+
 }

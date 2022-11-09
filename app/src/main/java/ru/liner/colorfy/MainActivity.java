@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -15,6 +16,7 @@ import ru.liner.colorfy.core.Colorfy;
 import ru.liner.colorfy.core.ColorfyActivity;
 import ru.liner.colorfy.dialogs.ColorfyDialog;
 import ru.liner.colorfy.views.ColorfyButton;
+import ru.liner.colorfy.views.ColorfyToast;
 
 public class MainActivity extends ColorfyActivity {
     private ImageView wallpaperView;
@@ -23,6 +25,7 @@ public class MainActivity extends ColorfyActivity {
     private ColorfyButton alertDialogButton;
     private ColorfyButton addIndex;
     private ColorfyButton minusIndex;
+    private ColorfyButton toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,7 @@ public class MainActivity extends ColorfyActivity {
         wallpaperView = findViewById(R.id.wallpaperView);
         addIndex = findViewById(R.id.addIndex);
         minusIndex = findViewById(R.id.minusIndex);
+        toast = findViewById(R.id.toast);
         colorfyButton = findViewById(R.id.autoColor);
         colorfyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +76,7 @@ public class MainActivity extends ColorfyActivity {
                 if (colorfy != null) {
                     colorfy.requestColors(true);
                 }
+
             }
         });
         addIndex.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +87,12 @@ public class MainActivity extends ColorfyActivity {
                 if (colorfy != null) {
                     colorfy.requestColors(true);
                 }
+            }
+        });
+        toast.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ColorfyToast.show(MainActivity.this, "Hello, im Color-fy toast!", Toast.LENGTH_LONG);
             }
         });
     }

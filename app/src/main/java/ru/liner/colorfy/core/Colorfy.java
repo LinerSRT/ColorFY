@@ -154,6 +154,11 @@ public class Colorfy implements WallpaperData.IGenerate {
         return lastWallpaperData;
     }
 
+    @Nullable
+    public WallpaperData getCurrentWallpaperData() {
+        return currentWallpaperData;
+    }
+
     /**
      * Request colors from installed wallpaper from device
      */

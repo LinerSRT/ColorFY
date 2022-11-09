@@ -15,7 +15,9 @@ import java.lang.reflect.Method;
 public class Reflect {
 
     @Nullable
-    public static Object getFieldSafety(@NonNull Object o, String filedName) {
+    public static Object getFieldSafety(@Nullable Object o, String filedName) {
+        if(o == null)
+            return null;
         Field field = findField(o.getClass(), filedName);
         if (field != null) {
             try {

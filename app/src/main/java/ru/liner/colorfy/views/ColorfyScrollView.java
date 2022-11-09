@@ -44,7 +44,7 @@ public class ColorfyScrollView extends ScrollView implements IWallpaperDataListe
 
     @Override
     public void onChanged(@NonNull WallpaperData wallpaperData) {
-        colorizeEdgeEffect(this, wallpaperData);
+        //colorizeEdgeEffect(this, wallpaperData);
         Drawable drawable = ContextCompat.getDrawable(getContext(), R.drawable.scrollbar);
         Objects.requireNonNull(drawable).setColorFilter(new PorterDuffColorFilter(wallpaperData.primaryColor, PorterDuff.Mode.SRC_IN));
         if (isVerticalScrollBarEnabled()) {

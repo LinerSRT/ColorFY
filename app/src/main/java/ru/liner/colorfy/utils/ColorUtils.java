@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.TypedValue;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IntRange;
 
 import java.util.Random;
 
@@ -14,6 +15,15 @@ import java.util.Random;
  * @created : 04.11.2022, пятница
  **/
 public class ColorUtils {
+    public static int calculateMinAlpha(@ColorInt int color, @ColorInt int toColor){
+        return androidx.core.graphics.ColorUtils.calculateMinimumAlpha(toColor, color, 4.5f);
+    }
+
+    @ColorInt
+    public static int mixedColor(@ColorInt int color, @ColorInt int mixColor, float ratio) {
+        return androidx.core.graphics.ColorUtils.blendARGB(color, mixColor, ratio);
+    }
+
     @ColorInt
     public static int darkerColor(@ColorInt int color, float ratio) {
         return androidx.core.graphics.ColorUtils.blendARGB(color, Color.BLACK, ratio);
@@ -42,6 +52,22 @@ public class ColorUtils {
         if (redGreenChannelDifference > tolerance || redGreenChannelDifference < -tolerance)
             return redBlueChannelDifference <= tolerance && redBlueChannelDifference >= -tolerance;
         return true;
+    }
+
+    public static boolean isSimilarColor(@ColorInt int sourceColor, @ColorInt int checkColor, @IntRange(from = 5, to = 100) int colorShift) {
+        int red1 = (sourceColor >>> 16) & 0xFF;
+        int green1 = (sourceColor >>> 8) & 0xFF;
+        int blue1 = (sourceColor) & 0xFF;
+        int alpha2 = (checkColor >>> 24) & 0xFF;
+        int red2 = (checkColor >>> 16) & 0xFF;
+        int green2 = (checkColor >>> 8) & 0xFF;
+        int blue2 = (checkColor) & 0xFF;
+        if (alpha2 == Color.TRANSPARENT)
+            return true;
+        if (red1 >= (red2 - colorShift) && red1 <= (red2 + colorShift))
+            if (green1 >= (green2 - colorShift) && green1 <= (green2 + colorShift))
+                return blue1 >= (blue2 - colorShift) && blue1 <= (blue2 + colorShift);
+        return false;
     }
 
     @ColorInt

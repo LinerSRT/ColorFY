@@ -28,7 +28,6 @@ public class WallpaperData {
     private static final float MIN_CONTRAST_BODY_TEXT = 4.5f;
     private static final int MAX_COLOR_COUNT = 128;
     private static final int MIN_COLOR_COUNT = 5;
-    public Bitmap bitmap;
     @ColorInt
     public int primaryColor;
     @ColorInt
@@ -42,11 +41,11 @@ public class WallpaperData {
     @ColorInt
     public int backgroundColor;
     public boolean isDarkTheme;
-    public boolean isCustomData;
     private boolean isTextColorGenerated;
+    public List<ColorVariant> colorVariantList;
 
-    private WallpaperData(@NonNull Context context, @NonNull Bitmap bitmap) {
-        this.bitmap = bitmap;
+    private WallpaperData(@NonNull Context context) {
+        this.colorVariantList = new ArrayList<>();
         if (Config.forceDayTheme) {
             this.isDarkTheme = false;
         } else if (Config.forceNightTheme) {
@@ -56,53 +55,39 @@ public class WallpaperData {
         }
     }
 
-    private WallpaperData(@NonNull Bitmap bitmap) {
-        this.bitmap = bitmap;
+    private WallpaperData() {
     }
 
-    private WallpaperData(Context context, @ColorInt int primaryColor) {
-        if (Config.forceDayTheme) {
-            this.isDarkTheme = false;
-        } else if (Config.forceNightTheme) {
-            this.isDarkTheme = true;
-        } else {
-            this.isDarkTheme = Utils.isNightTheme(context);
-        }
-        this.isCustomData = true;
-        this.primaryColor = primaryColor;
-        this.secondaryColor = ColorUtils.darkerColor(primaryColor, 0.2f);
-        ensureTextColorsGenerated();
-        this.backgroundColor = this.isDarkTheme ? ColorUtils.darkerColor(this.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(this.primaryColor, Config.backgroundToneAmount);
-        this.textColor = ColorUtils.isColorDark(this.backgroundColor) ? ColorUtils.lightenColor(this.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(this.primaryColor, 1f - Config.textToneAmount);
-    }
 
-    public static void fromColor(@NonNull Context context, @ColorInt int color, @NonNull IGenerate generate) {
-        new Thread(() -> generate.onGenerated(new WallpaperData(context, color))).start();
+    public static void fromColor(@NonNull Context context, @ColorInt int primaryColor, @NonNull IGenerate generate) {
+        new Thread(() -> {
+            WallpaperData wallpaperData = new WallpaperData(context);
+            wallpaperData.colorVariantList = new ArrayList<>();
+            wallpaperData.primaryColor = primaryColor;
+            wallpaperData.secondaryColor = ColorUtils.darkerColor(wallpaperData.primaryColor, 0.2f);
+            int lightAlpha = ColorUtils.calculateMinAlpha(primaryColor, Color.WHITE);
+            int darkAlpha = ColorUtils.calculateMinAlpha(primaryColor, Color.BLACK);
+            wallpaperData.textOnPrimaryColor = lightAlpha != -1 ?
+                    androidx.core.graphics.ColorUtils.setAlphaComponent(Color.WHITE, lightAlpha) :
+                    darkAlpha != -1 ? androidx.core.graphics.ColorUtils.setAlphaComponent(Color.BLACK, darkAlpha) : Color.WHITE;
+
+            wallpaperData.backgroundColor = wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
+            wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.textToneAmount);
+            wallpaperData.disabledTextColor = ColorUtils.mixedColor(wallpaperData.textColor, Color.GRAY, 0.9f);
+            generate.onGenerated(wallpaperData);
+        }).start();
     }
 
     public static void fromBitmap(@NonNull Context context, @NonNull Bitmap bitmap, @NonNull IGenerate generate) {
-        WallpaperData wallpaperData = new WallpaperData(context, bitmap);
         new Thread(() -> {
-
-            Palette palette = Palette
-                    .from(bitmap)
-                    .maximumColorCount(
-                            ((ActivityManager) context.getSystemService(ACTIVITY_SERVICE)).isLowRamDevice() ?
-                                    MIN_COLOR_COUNT : MAX_COLOR_COUNT)
-                    .generate();
-            Palette.Swatch mostCommonSwatch;
-            if (Config.usesAutomaticSwatchFiltering) {
-                List<Palette.Swatch> swatchList = new ArrayList<>(palette.getSwatches());
-                Collections.sort(swatchList, (a, b) -> b.getPopulation() - a.getPopulation());
-                Collections.sort(swatchList, (a, b) -> Double.compare(androidx.core.graphics.ColorUtils.calculateLuminance(b.getRgb()), androidx.core.graphics.ColorUtils.calculateLuminance(a.getRgb())));
-                List<Palette.Swatch> filteredSwatchList = new ArrayList<>();
-                for (Palette.Swatch swatch : swatchList) {
-                    if (!ColorUtils.isGray(swatch.getRgb()))
-                        filteredSwatchList.add(swatch);
-                }
-                mostCommonSwatch = filteredSwatchList.get(Config.usesMostLuminanceDetectedSwatch ? 0 : filteredSwatchList.size() / 2);
+            Palette palette = Palette.from(bitmap).maximumColorCount(((ActivityManager) context.getSystemService(ACTIVITY_SERVICE)).isLowRamDevice() ? MIN_COLOR_COUNT : MAX_COLOR_COUNT).generate();
+            List<ColorVariant> colorVariantList = getColorVariantList(palette);
+            WallpaperData wallpaperData = new WallpaperData(context);
+            int primaryColor;
+            if (Config.enableColorsSwitch) {
+                primaryColor = colorVariantList.get(Config.colorIndex).color;
             } else {
-                mostCommonSwatch = palette.getVibrantSwatch();
+                Palette.Swatch mostCommonSwatch = palette.getVibrantSwatch();
                 if (mostCommonSwatch == null)
                     mostCommonSwatch = palette.getLightVibrantSwatch();
                 if (mostCommonSwatch == null)
@@ -115,12 +100,20 @@ public class WallpaperData {
                     mostCommonSwatch = palette.getLightMutedSwatch();
                 if (mostCommonSwatch == null)
                     mostCommonSwatch = palette.getDarkMutedSwatch();
+                primaryColor = mostCommonSwatch.getRgb();
             }
-            wallpaperData.primaryColor = mostCommonSwatch.getRgb();
+            wallpaperData.colorVariantList = colorVariantList;
+            wallpaperData.primaryColor = primaryColor;
             wallpaperData.secondaryColor = ColorUtils.darkerColor(wallpaperData.primaryColor, 0.2f);
-            wallpaperData.textOnPrimaryColor = mostCommonSwatch.getBodyTextColor();
+            int lightAlpha = ColorUtils.calculateMinAlpha(primaryColor, Color.WHITE);
+            int darkAlpha = ColorUtils.calculateMinAlpha(primaryColor, Color.BLACK);
+            wallpaperData.textOnPrimaryColor = lightAlpha != -1 ?
+                    androidx.core.graphics.ColorUtils.setAlphaComponent(Color.WHITE, lightAlpha) :
+                    darkAlpha != -1 ? androidx.core.graphics.ColorUtils.setAlphaComponent(Color.BLACK, darkAlpha) : Color.WHITE;
+
             wallpaperData.backgroundColor = wallpaperData.isDarkTheme ? ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.backgroundToneAmount) : ColorUtils.lightenColor(wallpaperData.primaryColor, Config.backgroundToneAmount);
             wallpaperData.textColor = ColorUtils.isColorDark(wallpaperData.backgroundColor) ? ColorUtils.lightenColor(wallpaperData.primaryColor, Config.textToneAmount) : ColorUtils.darkerColor(wallpaperData.primaryColor, 1f - Config.textToneAmount);
+            wallpaperData.disabledTextColor = ColorUtils.mixedColor(wallpaperData.textColor, Color.GRAY, 0.9f);
             generate.onGenerated(wallpaperData);
         }).start();
     }
@@ -131,7 +124,22 @@ public class WallpaperData {
                 secondaryColor == other.secondaryColor &&
                 textOnPrimaryColor == other.textOnPrimaryColor &&
                 textColor == other.textColor &&
+                disabledTextColor == other.disabledTextColor &&
                 backgroundColor == other.backgroundColor;
+    }
+
+    @SuppressWarnings("unused")
+    public static WallpaperData clone(WallpaperData from) {
+        WallpaperData wallpaperData = new WallpaperData();
+        wallpaperData.colorVariantList = from.colorVariantList;
+        wallpaperData.isDarkTheme = from.isDarkTheme;
+        wallpaperData.primaryColor = from.primaryColor;
+        wallpaperData.secondaryColor = from.secondaryColor;
+        wallpaperData.textOnPrimaryColor = from.textOnPrimaryColor;
+        wallpaperData.textColor = from.textColor;
+        wallpaperData.disabledTextColor = from.disabledTextColor;
+        wallpaperData.backgroundColor = from.backgroundColor;
+        return wallpaperData;
     }
 
     public interface IGenerate {
@@ -139,16 +147,12 @@ public class WallpaperData {
     }
 
 
-    @SuppressWarnings("unused")
-    public static WallpaperData clone(WallpaperData from) {
-        WallpaperData wallpaperData = new WallpaperData(from.bitmap);
-        wallpaperData.isDarkTheme = from.isDarkTheme;
-        wallpaperData.primaryColor = from.primaryColor;
-        wallpaperData.secondaryColor = from.secondaryColor;
-        wallpaperData.textOnPrimaryColor = from.textOnPrimaryColor;
-        wallpaperData.textColor = from.textColor;
-        wallpaperData.backgroundColor = from.backgroundColor;
-        return wallpaperData;
+    private static boolean containSimilarColor(List<ColorVariant> colorVariantList, @ColorInt int color) {
+        for (ColorVariant colorVariant : colorVariantList) {
+            if (ColorUtils.isSimilarColor(colorVariant.color, color, Config.similarityColorsShift))
+                return true;
+        }
+        return false;
     }
 
     private void ensureTextColorsGenerated() {
@@ -165,6 +169,19 @@ public class WallpaperData {
                 isTextColorGenerated = true;
             }
         }
+    }
+
+    private static List<ColorVariant> getColorVariantList(Palette palette) {
+        List<ColorVariant> colorVariantList = new ArrayList<>();
+        List<Palette.Swatch> swatchList = new ArrayList<>(palette.getSwatches());
+        Collections.sort(swatchList, (a, b) -> b.getPopulation() - a.getPopulation());
+        Collections.sort(swatchList, (a, b) -> Double.compare(androidx.core.graphics.ColorUtils.calculateLuminance(b.getRgb()), androidx.core.graphics.ColorUtils.calculateLuminance(a.getRgb())));
+        for (Palette.Swatch swatch : swatchList) {
+            if (!ColorUtils.isGray(swatch.getRgb()) && !ColorUtils.isColorLight(swatch.getRgb()) && !containSimilarColor(colorVariantList, swatch.getRgb()))
+                colorVariantList.add(new ColorVariant(colorVariantList.isEmpty() ? 0 : colorVariantList.size(), swatch.getRgb()));
+        }
+        Config.maxColorIndex = colorVariantList.size() - 1;
+        return colorVariantList;
     }
 
 

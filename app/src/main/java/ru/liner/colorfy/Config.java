@@ -63,16 +63,22 @@ public class Config {
     public static int customPrimaryColor = Color.RED;
 
     /**
-     * Try to detect most common color for human eye automatically
-     */
-    public static boolean usesAutomaticSwatchFiltering = true;
-    /**
-     * Use most luminance color from automatic detected colors, if its false - use average color
-     */
-    public static boolean usesMostLuminanceDetectedSwatch = false;
-
-    /**
      * Register and unregister wallpaper colors listeners on activity lifecycle
      */
     public static boolean automaticListenersLifecycle = true;
+
+    /**
+     * Enable colors switching in current wallpaper
+     */
+    public static boolean enableColorsSwitch = true;
+
+    public static int similarityColorsShift = 50;
+    /**
+     * Current used color index when enabled color switching
+     */
+    public static int colorIndex = 0;
+    /**
+     * Do not modify!
+     */
+    public static int maxColorIndex = Integer.MAX_VALUE;
 }

@@ -1,6 +1,6 @@
 package ru.liner.colorfy;
 
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -19,9 +19,10 @@ import ru.liner.colorfy.views.ColorfyButton;
 public class MainActivity extends ColorfyActivity {
     private ImageView wallpaperView;
     private ColorfyButton colorfyButton;
-    private ColorfyButton colorfyButton1;
 
     private ColorfyButton alertDialogButton;
+    private ColorfyButton addIndex;
+    private ColorfyButton minusIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,25 +30,14 @@ public class MainActivity extends ColorfyActivity {
         setContentView(R.layout.activity_main);
         alertDialogButton = findViewById(R.id.alertDialogTest);
         wallpaperView = findViewById(R.id.wallpaperView);
+        addIndex = findViewById(R.id.addIndex);
+        minusIndex = findViewById(R.id.minusIndex);
         colorfyButton = findViewById(R.id.autoColor);
-        colorfyButton1 = findViewById(R.id.autoLuminanceColor);
         colorfyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Config.usesAutomaticSwatchFiltering = !Config.usesAutomaticSwatchFiltering;
-                colorfyButton.setText(String.format("Switch automatic color: %s", Config.usesAutomaticSwatchFiltering));
-                if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                    return;
-                if (colorfy != null) {
-                    colorfy.requestColors(true);
-                }
-            }
-        });
-        colorfyButton1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Config.usesMostLuminanceDetectedSwatch = !Config.usesMostLuminanceDetectedSwatch;
-                colorfyButton1.setText(String.format("Switch automatic luminance: %s", Config.usesMostLuminanceDetectedSwatch));
+                Config.enableColorsSwitch = !Config.enableColorsSwitch;
+                colorfyButton.setText(String.format("enableColorsSwitch: %s", Config.enableColorsSwitch));
                 if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
                     return;
                 if (colorfy != null) {
@@ -71,6 +61,26 @@ public class MainActivity extends ColorfyActivity {
                     });
                     alertDialog.show();
                     ColorfyDialog.apply(alertDialog, colorfy.getLastWallpaperData());
+                }
+            }
+        });
+        minusIndex.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onClick(View view) {
+                Config.colorIndex = Math.max(0, Config.colorIndex - 1);
+                if (colorfy != null) {
+                    colorfy.requestColors(true);
+                }
+            }
+        });
+        addIndex.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("MissingPermission")
+            @Override
+            public void onClick(View view) {
+                Config.colorIndex = Math.min(Config.maxColorIndex, Config.colorIndex + 1);
+                if (colorfy != null) {
+                    colorfy.requestColors(true);
                 }
             }
         });

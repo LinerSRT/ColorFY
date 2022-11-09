@@ -17,22 +17,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ru.liner.colorfy.views.ColorfyButton
-            android:id="@+id/autoLuminanceColor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Switch automatic luminance" />
 
         <ru.liner.colorfy.views.ColorfyButton
             android:id="@+id/autoColor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Switch automatic color" />
+
         <ru.liner.colorfy.views.ColorfyButton
             android:id="@+id/alertDialogTest"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Alert dialog" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ru.liner.colorfy.views.ColorfyButton
+                android:id="@+id/minusIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Prev color" />
+
+            <ru.liner.colorfy.views.ColorfyButton
+                android:id="@+id/addIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:text="Next color" />
+        </LinearLayout>
     </LinearLayout>
 
 

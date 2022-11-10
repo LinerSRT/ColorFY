@@ -21,6 +21,7 @@ import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import ru.liner.colorfy.Config;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
@@ -113,18 +114,16 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         super.onAttachFragment(fragment);
         if (colorfy == null)
             return;
-
         WallpaperData wallpaperData = colorfy.getLastWallpaperData();
-        if(wallpaperData == null)
+        if (wallpaperData == null || ActivityCompat.checkSelfPermission(ColorfyActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
             return;
         if (fragment instanceof IWallpaperDataListener) {
             ((IWallpaperDataListener) fragment).onChanged(wallpaperData);
         }
         if (Config.changeFragmentBackground) {
             ViewGroup fragmentView = (ViewGroup) fragment.getView();
-            if (fragmentView != null && fragmentView.getChildCount() >= 1) {
-                View fragmentRootView = fragmentView.getChildAt(0);
-                fragmentRootView.setBackgroundColor(wallpaperData.backgroundColor);
+            if (fragmentView != null) {
+                applyWallpaperData(fragmentView, wallpaperData);
             }
         }
     }
@@ -162,6 +161,13 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
                     applyWallpaperData((ViewGroup) child, wallpaperData);
                 }
                 ((IWallpaperDataListener) child).onChanged(wallpaperData);
+            } else if (child instanceof RecyclerView) {
+                int childCount = ((RecyclerView) child).getChildCount();
+                for (int rv = 0; rv < childCount; rv++) {
+                    View rvChild = ((RecyclerView) child).getChildAt(rv);
+                    if(rvChild instanceof IWallpaperDataListener)
+                        ((IWallpaperDataListener) rvChild).onChanged(wallpaperData);
+                }
             } else if (child instanceof ViewGroup) {
                 applyWallpaperData((ViewGroup) child, wallpaperData);
             }

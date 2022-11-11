@@ -70,7 +70,7 @@ public class Config {
     /**
      * Enable colors switching in current wallpaper, not working with enabled "usesCustomColor"
      */
-    public static boolean enableColorsSwitch = true;
+    public static boolean enableColorsSwitch = false;
 
     public static int similarityColorsShift = 50;
     /**

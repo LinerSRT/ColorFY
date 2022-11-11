@@ -23,6 +23,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.liner.colorfy.Config;
 import ru.liner.colorfy.listener.IWallpaperDataListener;
 import ru.liner.colorfy.listener.IWallpaperListener;
@@ -41,11 +44,13 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
     private ActionBar actionBar;
     private ViewGroup rootView;
     private boolean acceptColorChanged;
+    private List<RecyclerViewListener> recyclerViewListenerPool;
 
     @CallSuper
     @Override
     protected void onStart() {
         super.onStart();
+        recyclerViewListenerPool = new ArrayList<>();
         colorfy = Colorfy.getInstance(this);
         colorfy.addWallpaperDataListener(getClass().getSimpleName(), this);
         colorfy.addWallpaperListener(getClass().getSimpleName(), this);
@@ -152,22 +157,47 @@ public class ColorfyActivity extends AppCompatActivity implements IWallpaperData
         });
     }
 
+    private void processRecyclerView(RecyclerView recyclerView) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED || colorfy == null)
+            return;
+        WallpaperData wallpaperData = colorfy.getCurrentWallpaperData(); if (wallpaperData == null)
+            return;
+        applyWallpaperData(recyclerView, wallpaperData);
+        String hashCode = recyclerView.getClass().getSimpleName() + recyclerView.getId();
+        for (RecyclerViewListener item : recyclerViewListenerPool)
+            if (item.getHashCode().equals(hashCode))
+                return;
+        RecyclerViewListener listener = new RecyclerViewListener(hashCode) {
+            @Override
+            public void requestColors(RecyclerView recyclerView) {
+                applyWallpaperData(recyclerView, wallpaperData);
+            }
+        };
+        recyclerViewListenerPool.add(listener);
+        recyclerView.addOnScrollListener(listener);
+    }
+
+    private void applyWallpaperData(@NonNull RecyclerView recyclerView, @NonNull WallpaperData wallpaperData) {
+        int childCount = recyclerView.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+            if (holder instanceof IWallpaperDataListener)
+                ((IWallpaperDataListener) holder).onChanged(wallpaperData);
+        }
+    }
+
     @RequiresPermission(anyOf = {Manifest.permission.READ_EXTERNAL_STORAGE})
-    private void applyWallpaperData(ViewGroup viewGroup, WallpaperData wallpaperData) {
+    private void applyWallpaperData(@NonNull ViewGroup viewGroup, WallpaperData wallpaperData) {
+        if (wallpaperData == null)
+            return;
         for (int i = 0; i < viewGroup.getChildCount(); i++) {
             View child = viewGroup.getChildAt(i);
             if (child instanceof IWallpaperDataListener) {
-                if (child instanceof ViewGroup) {
+                if (child instanceof ViewGroup)
                     applyWallpaperData((ViewGroup) child, wallpaperData);
-                }
                 ((IWallpaperDataListener) child).onChanged(wallpaperData);
             } else if (child instanceof RecyclerView) {
-                int childCount = ((RecyclerView) child).getChildCount();
-                for (int rv = 0; rv < childCount; rv++) {
-                    View rvChild = ((RecyclerView) child).getChildAt(rv);
-                    if(rvChild instanceof IWallpaperDataListener)
-                        ((IWallpaperDataListener) rvChild).onChanged(wallpaperData);
-                }
+                processRecyclerView((RecyclerView) child);
             } else if (child instanceof ViewGroup) {
                 applyWallpaperData((ViewGroup) child, wallpaperData);
             }

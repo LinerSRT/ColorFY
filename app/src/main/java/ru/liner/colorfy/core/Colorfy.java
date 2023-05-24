@@ -14,12 +14,16 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -294,9 +298,38 @@ public class Colorfy implements WallpaperData.IGenerate {
         return Utils.drawableToBitmap(isWallpaperLive() ? wallpaperManager.getWallpaperInfo().loadThumbnail(packageManager) : wallpaperManager.getDrawable());
     }
 
+
+
+    public static void applyWallpaperData(@NonNull ViewGroup viewGroup, WallpaperData wallpaperData) {
+        if (wallpaperData == null)
+            return;
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (child instanceof IWallpaperDataListener) {
+                if (child instanceof ViewGroup)
+                    applyWallpaperData((ViewGroup) child, wallpaperData);
+                ((IWallpaperDataListener) child).onChanged(wallpaperData);
+            } else if (child instanceof CheckBox) {
+                ((CheckBox)child).setBackgroundTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
+                ((CheckBox)child).setTextColor(wallpaperData.textOnPrimaryColor);
+            } else if (child instanceof Button) {
+                ((Button)child).setBackgroundTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
+                ((Button)child).setTextColor(wallpaperData.textOnPrimaryColor);
+            } else if (child instanceof ViewGroup) {
+                applyWallpaperData((ViewGroup) child, wallpaperData);
+            }
+        }
+    }
+
+
     public static void apply(@NonNull Button button, @NonNull WallpaperData wallpaperData) {
         button.setBackgroundTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
         button.setTextColor(wallpaperData.textOnPrimaryColor);
+    }
+
+    public static void apply(@NonNull CheckBox checkBox, @NonNull WallpaperData wallpaperData){
+        checkBox.setButtonTintList(ColorStateList.valueOf(wallpaperData.primaryColor));
+        checkBox.setTextColor(wallpaperData.textColor);
     }
 
 }

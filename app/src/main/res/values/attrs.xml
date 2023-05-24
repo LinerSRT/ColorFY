@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ColorfyTextView">
+        <attr name="useOnPrimaryTextColor" format="boolean|reference"/>
+        <attr name="enableBackgroundColor" format="boolean|reference"/>
+        <attr name="usePrimaryBackgroundColor" format="boolean|reference"/>
+    </declare-styleable>
+    <declare-styleable name="ColorfyConstraintLayout">
+        <attr name="cl_primaryBackgroundColor" format="boolean|reference"/>
+    </declare-styleable>
+    <declare-styleable name="ColorfyLinearLayout">
+        <attr name="ll_primaryBackgroundColor" format="boolean|reference"/>
+    </declare-styleable>
+</resources>
